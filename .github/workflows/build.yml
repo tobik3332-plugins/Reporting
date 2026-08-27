@@ -1,0 +1,30 @@
+name: Build Plugin (.JAR)
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Stahovani repozitare
+      uses: actions/checkout@v4
+
+    - name: Nastaveni Java 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Kompilace pomoci Mavenu
+      run: mvn clean package --batch-mode
+
+    - name: Ulozeni hotoveho .JAR souboru
+      uses: actions/upload-artifact@v4
+      with:
+        name: Reporting-Plugin
+        path: target/*.jar
