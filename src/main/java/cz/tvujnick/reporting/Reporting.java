@@ -124,7 +124,6 @@ public class Reporting extends JavaPlugin implements CommandExecutor, TabComplet
             String reporter = sender.getName();
             String reported = args[0];
 
-            // Kontrola: Hráč nemůže nahlásit sám sebe
             if (reporter.equalsIgnoreCase(reported)) {
                 sender.sendMessage(color(getConfig().getString("messages.cannot-report-self")));
                 return true;
@@ -137,11 +136,9 @@ public class Reporting extends JavaPlugin implements CommandExecutor, TabComplet
             Report newReport = new Report(id, reporter, reported, reason, time, true);
             reports.put(id, newReport);
 
-            // Zpráva pro hráče
             sender.sendMessage(color(getConfig().getString("messages.report-success")
                     .replace("%reported%", reported).replace("%id%", String.valueOf(id))));
 
-            // Zpráva pro adminy ve hře
             String notifyMsg = color(getConfig().getString("messages.notify-staff")
                     .replace("%reporter%", reporter).replace("%reported%", reported)
                     .replace("%reason%", reason).replace("%id%", String.valueOf(id)));
@@ -150,7 +147,6 @@ public class Reporting extends JavaPlugin implements CommandExecutor, TabComplet
                 if (p.hasPermission("reporting.informate")) p.sendMessage(notifyMsg);
             }
 
-            // Odeslání na Discord
             String hook = getConfig().getString("discord.webhook-url");
             String title = getConfig().getString("discord.new-report-embed.title").replace("%id%", String.valueOf(id));
             String desc = getConfig().getString("discord.new-report-embed.description")
@@ -168,8 +164,12 @@ public class Reporting extends JavaPlugin implements CommandExecutor, TabComplet
                 return true;
             }
 
-            // /reports reload
+            // /reports reload (Vyžaduje reporting.admin.admin)
             if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
+                if (!sender.hasPermission("reporting.admin.admin")) {
+                    sender.sendMessage(color(getConfig().getString("messages.no-permission")));
+                    return true;
+                }
                 reloadConfig();
                 setupReportsFile();
                 loadReports();
@@ -177,8 +177,12 @@ public class Reporting extends JavaPlugin implements CommandExecutor, TabComplet
                 return true;
             }
 
-            // /reports savedata
+            // /reports savedata (Vyžaduje reporting.admin.admin)
             if (args.length == 1 && args[0].equalsIgnoreCase("savedata")) {
+                if (!sender.hasPermission("reporting.admin.admin")) {
+                    sender.sendMessage(color(getConfig().getString("messages.no-permission")));
+                    return true;
+                }
                 Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
                     saveReportsToDisk();
                     sender.sendMessage(color(getConfig().getString("messages.savedata-success")));
@@ -194,7 +198,6 @@ public class Reporting extends JavaPlugin implements CommandExecutor, TabComplet
                         reports.get(id).open = false;
                         sender.sendMessage(color(getConfig().getString("messages.report-closed-chat").replace("%id%", String.valueOf(id))));
 
-                        // Discord zprávu o uzavření
                         String hook = getConfig().getString("discord.webhook-url");
                         String title = getConfig().getString("discord.closed-report-embed.title").replace("%id%", String.valueOf(id));
                         String desc = getConfig().getString("discord.closed-report-embed.description");
@@ -252,8 +255,10 @@ public class Reporting extends JavaPlugin implements CommandExecutor, TabComplet
 
         if (command.getName().equalsIgnoreCase("reports") && sender.hasPermission("reporting.admin")) {
             if (args.length == 1) {
-                completions.add("reload");
-                completions.add("savedata");
+                if (sender.hasPermission("reporting.admin.admin")) {
+                    completions.add("reload");
+                    completions.add("savedata");
+                }
                 for (Report r : reports.values()) {
                     if (r.open) completions.add(String.valueOf(r.id));
                 }
