@@ -2,6 +2,7 @@
 # INFORMACE O PERMISÍCH PRO TENTO PLUGIN:
 # reporting.admin - Přístup k příkazu /reports (seznam, close, reload, savedata)
 # reporting.informate - Zobrazení zprávy v chatu, když někdo někoho nahlásí
+# reporting.admin.admin - Přístup k pokročilým příkazům /reports reload a /reports savedata
 # ==========================================
 
 settings:
