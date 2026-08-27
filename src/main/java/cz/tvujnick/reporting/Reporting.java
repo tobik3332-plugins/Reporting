@@ -5,6 +5,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -13,11 +14,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class Reporting extends JavaPlugin implements CommandExecutor {
+public class Reporting extends JavaPlugin implements CommandExecutor, TabCompleter {
 
     private static Reporting instance;
     private Map<Integer, Report> reports = new HashMap<>();
@@ -35,7 +38,9 @@ public class Reporting extends JavaPlugin implements CommandExecutor {
         saveDefaultConfig();
         
         getCommand("report").setExecutor(this);
+        getCommand("report").setTabCompleter(this);
         getCommand("reports").setExecutor(this);
+        getCommand("reports").setTabCompleter(this);
 
         setupReportsFile();
         loadReports();
@@ -118,6 +123,13 @@ public class Reporting extends JavaPlugin implements CommandExecutor {
 
             String reporter = sender.getName();
             String reported = args[0];
+
+            // Kontrola: Hráč nemůže nahlásit sám sebe
+            if (reporter.equalsIgnoreCase(reported)) {
+                sender.sendMessage(color(getConfig().getString("messages.cannot-report-self")));
+                return true;
+            }
+
             String reason = String.join(" ", args).substring(reported.length() + 1);
             String time = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").format(new Date());
             int id = nextId++;
@@ -125,11 +137,11 @@ public class Reporting extends JavaPlugin implements CommandExecutor {
             Report newReport = new Report(id, reporter, reported, reason, time, true);
             reports.put(id, newReport);
 
-            // Zprava pro hrace
+            // Zpráva pro hráče
             sender.sendMessage(color(getConfig().getString("messages.report-success")
                     .replace("%reported%", reported).replace("%id%", String.valueOf(id))));
 
-            // Zprava pro adminy ve hre
+            // Zpráva pro adminy ve hře
             String notifyMsg = color(getConfig().getString("messages.notify-staff")
                     .replace("%reporter%", reporter).replace("%reported%", reported)
                     .replace("%reason%", reason).replace("%id%", String.valueOf(id)));
@@ -138,7 +150,7 @@ public class Reporting extends JavaPlugin implements CommandExecutor {
                 if (p.hasPermission("reporting.informate")) p.sendMessage(notifyMsg);
             }
 
-            // Odeslani na Discord
+            // Odeslání na Discord
             String hook = getConfig().getString("discord.webhook-url");
             String title = getConfig().getString("discord.new-report-embed.title").replace("%id%", String.valueOf(id));
             String desc = getConfig().getString("discord.new-report-embed.description")
@@ -182,7 +194,7 @@ public class Reporting extends JavaPlugin implements CommandExecutor {
                         reports.get(id).open = false;
                         sender.sendMessage(color(getConfig().getString("messages.report-closed-chat").replace("%id%", String.valueOf(id))));
 
-                        // Discord zprava o uzavreni
+                        // Discord zprávu o uzavření
                         String hook = getConfig().getString("discord.webhook-url");
                         String title = getConfig().getString("discord.closed-report-embed.title").replace("%id%", String.valueOf(id));
                         String desc = getConfig().getString("discord.closed-report-embed.description");
@@ -221,5 +233,35 @@ public class Reporting extends JavaPlugin implements CommandExecutor {
         }
 
         return false;
+    }
+
+    // ===================== REGISTRACE SUBCOMMANDŮ A NAŠEPTÁVÁNÍ (TAB) =====================
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        List<String> completions = new ArrayList<>();
+
+        if (command.getName().equalsIgnoreCase("report")) {
+            if (args.length == 1) {
+                for (Player p : Bukkit.getOnlinePlayers()) {
+                    if (!p.getName().equalsIgnoreCase(sender.getName())) {
+                        completions.add(p.getName());
+                    }
+                }
+            }
+        }
+
+        if (command.getName().equalsIgnoreCase("reports") && sender.hasPermission("reporting.admin")) {
+            if (args.length == 1) {
+                completions.add("reload");
+                completions.add("savedata");
+                for (Report r : reports.values()) {
+                    if (r.open) completions.add(String.valueOf(r.id));
+                }
+            } else if (args.length == 2 && !args[0].equalsIgnoreCase("reload") && !args[0].equalsIgnoreCase("savedata")) {
+                completions.add("close");
+            }
+        }
+
+        return completions;
     }
 }
