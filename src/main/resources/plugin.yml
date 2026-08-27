@@ -1,0 +1,9 @@
+name: Reporting
+version: '1.0'
+main: cz.tvujnick.reporting.Reporting
+api-version: '1.21'
+commands:
+  report:
+    description: Nahlaseni hrace.
+  reports:
+    description: Administrace reportu.
