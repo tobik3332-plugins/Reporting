@@ -1,0 +1,34 @@
+# ==========================================
+# INFORMACE O PERMISÍCH PRO TENTO PLUGIN:
+# reporting.admin - Přístup k příkazu /reports (seznam, close, reload, savedata)
+# reporting.informate - Zobrazení zprávy v chatu, když někdo někoho nahlásí
+# ==========================================
+
+settings:
+  # Jak často se mají data z RAM ukládat do reports.yml (v minutách)
+  auto-save-interval: 10
+
+messages:
+  no-permission: "&cNemáš oprávnění pro tento příkaz!"
+  report-help: "&ePoužití: &7/report <hráč> <důvod>"
+  report-success: "&aÚspěšně jsi nahlásil hráče &e%reported%&a. ID: &7%id%"
+  notify-staff: "&8[&cReport&8] &e%reporter% &7nahlásil &e%reported% &7- Důvod: &f%reason% &8(ID: %id%)"
+  reports-help: "&ePoužití: &7/reports, /reports <ID> close, /reports reload, /reports savedata"
+  reports-list-header: "&8=== &cAktivní Reporty &8==="
+  reports-list-format: "&eID: %id% &8| &7Čas: &f%time% &8| &7Kdo: &f%reporter% &8-> &f%reported% &8| &7Důvod: &f%reason%"
+  reports-list-empty: "&aNejsou zde žádné aktivní reporty."
+  report-closed-chat: "&aReport s ID &e%id% &abyl uzavřen."
+  report-not-found: "&cReport s tímto ID neexistuje nebo je již uzavřen."
+  reload-success: "&aReporting plugin úspěšně reloadován!"
+  savedata-success: "&aVšechny reporty byly okamžitě uloženy do reports.yml."
+
+discord:
+  webhook-url: "TVUJ_WEBHOOK_URL_ZDE"
+  new-report-embed:
+    color: 16711680 # Červená barva
+    title: "Nový Report! (ID: %id%)"
+    description: "**Oznamovatel:** %reporter%\n**Nahlášený:** %reported%\n**Důvod:** %reason%"
+  closed-report-embed:
+    color: 65280 # Zelená barva
+    title: "Report Uzavřen (ID: %id%)"
+    description: "Tento report byl uzavřen administrátorem."
