@@ -9,7 +9,8 @@ settings:
   auto-save-interval: 10
 
 messages:
-  no-permission: "&cNemáš oprávnění pro tento příkaz!"
+  no-permission: "&cNa toto nemáš právo."
+  cannot-report-self: "&cNemůžeš nahlásit sám sebe!"
   report-help: "&ePoužití: &7/report <hráč> <důvod>"
   report-success: "&aÚspěšně jsi nahlásil hráče &e%reported%&a. ID: &7%id%"
   notify-staff: "&8[&cReport&8] &e%reporter% &7nahlásil &e%reported% &7- Důvod: &f%reason% &8(ID: %id%)"
